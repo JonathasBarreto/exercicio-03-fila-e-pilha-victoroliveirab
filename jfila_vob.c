@@ -1,38 +1,64 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Solucao temporaria utilizando arrays porque a de listas nao funciona no spoj --'
+struct queueinfo {
+  struct item* first;
+  struct item* last;
+  int size;
+};
 
-//10 99 10 23 55 1024 37 68 12 1 96 6 1024 10 99 96 1 37
+struct item {
+  int id;
+  struct item* next;
+};
 
-void print_queue(int queue[], int size) {
-  for (int i=0; i < size; i++) {
-    if (queue[i] != 0) {
-      printf("%d ",queue[i]);
-    }
+void print_queue(struct item* curr) {
+  while (curr) {
+    printf("%d ",curr->id);
+    curr = curr->next;
   }
   printf("\n");
 }
 
 int main() {
-  int q0, qleft; // initial number of items on queue , num of items leaving
-  scanf("%d",&q0);
-  int queue[q0];
-  for (int i=0; i<q0; i++) {
-    scanf("%d",&queue[i]); //id for the i-th item on queue
-  }
-  //print_queue(queue,q0);
-  scanf("%d",&qleft);
-  for (int i=0; i<qleft; i++) {
-    int id;
-    scanf("%d",&id);
-    for (int j=0; j<q0; j++) {
-      if (queue[j] == id) {
-        queue[j] = 0;
-        break;
-      }
+  int qleft; // initial number of items on queue , num of items leaving
+  struct queueinfo queueinfo;
+  scanf("%d",&queueinfo.size);
+  struct item * queue = (struct item*)malloc(queueinfo.size*sizeof(struct item));
+  for (int i=0; i<queueinfo.size; i++) {
+    scanf("%d",&(queue+i)->id); //id for the i-th item on queue
+    (queue+i-1)->next = NULL;
+    queueinfo.last = queue+i;
+    if (i) {
+      (queue+i-1)->next = queue+i;
+    }
+    else {
+      queueinfo.first = queue;
     }
   }
-  print_queue(queue,q0);
+
+  scanf("%d",&qleft);
+  int * ids = (int *)malloc(qleft*sizeof(int));
+  for (int i=0; i<qleft; i++) {
+    scanf("%d",ids+i);
+  }
+
+  for (int i=0; i<qleft; i++) {
+    int takeid = *(ids+i);
+    struct item* curr = (struct item*)malloc(sizeof(struct item));
+    curr = queueinfo.first;
+    if (curr->id == takeid) {
+      queueinfo.first = curr->next;
+    }
+    else {
+      while (curr->next->id != takeid) {
+        curr = curr->next;
+      }
+      struct item* next = (struct item*)malloc(sizeof(struct item));
+      next = curr->next;
+      curr->next = next->next;
+    }
+  }
+  print_queue(queueinfo.first);
   return 0;
 }
